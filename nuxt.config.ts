@@ -30,6 +30,13 @@ export default defineNuxtConfig({
 			autoprefixer: {}
 		}
 	},
+	nitro: {
+		esbuild: {
+			options: {
+				target: 'es2022'
+			}
+		}
+	},
 	runtimeConfig: {
 		public: {
 			nodeEnv: env.NODE_ENV
