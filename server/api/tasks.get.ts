@@ -1,6 +1,7 @@
 import { prisma } from '../utils/prisma'
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
+  await requireAuth(event)
   try {
     return await prisma.task.findMany({
       orderBy: {

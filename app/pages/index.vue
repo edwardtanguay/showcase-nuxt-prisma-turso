@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 useHead({
   title: 'Nuxt/Prisma/Turso Showcase',
@@ -8,6 +8,21 @@ useHead({
   ]
 })
 
+const config = useRuntimeConfig()
+const isBypass = config.public.bypassAuth
+
+const auth = !isBypass ? useAuth() : null
+const loggedIn = computed(() => isBypass ? true : (auth?.loggedIn ?? false))
+const user = computed(() => isBypass ? { given_name: 'Local', family_name: 'Developer', picture: null } : (auth?.user ?? null))
+
+const handleLogout = () => {
+  if (isBypass) {
+    alert("Auth bypass mode is enabled. In production, this will log you out via Kinde.")
+  } else {
+    navigateTo('/api/logout', { external: true })
+  }
+}
+
 interface Task {
   id: string
   title: string
@@ -15,8 +30,10 @@ interface Task {
   createdAt: string
 }
 
-// Fetch tasks from our new GET API endpoint
-const { data: tasks, refresh, status } = await useFetch<Task[]>('/api/tasks')
+// Fetch tasks from our new GET API endpoint (only when logged in)
+const { data: tasks, refresh, status } = await useFetch<Task[]>('/api/tasks', {
+  immediate: loggedIn.value
+})
 const newTaskTitle = ref('')
 const isAdding = ref(false)
 const deletingId = ref<string | null>(null)
@@ -55,8 +72,33 @@ async function handleDeleteTask(id: string) {
 </script>
 
 <template>
-  <div class="max-w-2xl mx-auto py-16 px-4">
-    <div class="space-y-8">
+  <div class="max-w-2xl mx-auto py-16 px-4 space-y-6">
+    <!-- Logged In: Task Manager View -->
+    <div v-if="loggedIn" class="space-y-8">
+      <!-- User Profile Header -->
+      <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-800">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold overflow-hidden">
+            <img v-if="user?.picture" :src="user.picture" alt="Avatar" class="w-full h-full object-cover" />
+            <span v-else>{{ user?.given_name?.[0] || 'U' }}</span>
+          </div>
+          <div>
+            <div class="text-sm font-semibold text-gray-900 dark:text-white">
+              {{ user?.given_name }} {{ user?.family_name }}
+            </div>
+            <div class="text-xs text-gray-500 dark:text-gray-400">
+              Authenticated via <span class="font-medium text-indigo-500">{{ isBypass ? 'Mock Auth' : 'Kinde' }}</span>
+            </div>
+          </div>
+        </div>
+        <button
+          @click="handleLogout"
+          class="px-4 py-2 text-xs font-semibold text-gray-600 hover:text-red-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all"
+        >
+          Sign Out
+        </button>
+      </div>
+
       <!-- Header Section -->
       <div class="text-center space-y-2">
         <h1 class="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-5xl">
@@ -69,7 +111,6 @@ async function handleDeleteTask(id: string) {
 
       <!-- Card Container -->
       <div class="bg-white dark:bg-gray-900 shadow-xl rounded-2xl border border-gray-100 dark:border-gray-800 p-6 sm:p-8 space-y-6">
-        
         <!-- Add Task Form -->
         <form @submit.prevent="handleAddTask" class="flex gap-2">
           <input
@@ -131,6 +172,47 @@ async function handleDeleteTask(id: string) {
         <div v-else class="text-center py-12 space-y-2">
           <p class="text-gray-400 dark:text-gray-500 font-medium">No tasks found</p>
           <p class="text-sm text-gray-400">Add some above to verify your Turso database integration!</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logged Out: Welcome & Landing View -->
+    <div v-else class="space-y-8 text-center py-12">
+      <!-- Header Section -->
+      <div class="space-y-2">
+        <h1 class="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-5xl">
+          Turso Todo Manager
+        </h1>
+        <p class="text-lg text-gray-500 dark:text-gray-400">
+          A real-time reactive task list powered by Nuxt 3, Prisma ORM, and Turso.
+        </p>
+      </div>
+
+      <!-- Welcome Card -->
+      <div class="bg-white dark:bg-gray-900 shadow-xl rounded-2xl border border-gray-100 dark:border-gray-800 p-8 sm:p-12 space-y-6">
+        <div class="space-y-2">
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Welcome, friend!</h2>
+          <p class="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+            Please log in with your account to view and manage your personal tasks. You can also explore public sections of the application below.
+          </p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center pt-2">
+          <a
+            href="/api/login"
+            class="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl shadow-md transition-all flex items-center gap-2"
+          >
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+              <path d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.114-5.136 4.114-3.553 0-6.436-2.883-6.436-6.436s2.883-6.436 6.436-6.436c1.545 0 2.956.55 4.056 1.458l3.11-3.11C19.22 2.25 15.937 1 12.24 1 6.033 1 1 6.033 1 12.24s5.033 11.24 11.24 11.24c6.208 0 11.24-5.033 11.24-11.24 0-.687-.06-1.353-.18-1.955H12.24z"/>
+            </svg>
+            Continue with Google
+          </a>
+          <NuxtLink
+            to="/about"
+            class="px-6 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold rounded-xl transition-all"
+          >
+            About this Showcase
+          </NuxtLink>
         </div>
       </div>
     </div>

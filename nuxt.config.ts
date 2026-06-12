@@ -5,7 +5,7 @@ export default defineNuxtConfig({
 	compatibilityDate: '2025-07-15',
 	devtools: { enabled: true },
 
-	modules: ['@nuxt/ui', '@nuxtjs/color-mode'],
+	modules: ['@nuxt/ui', '@nuxtjs/color-mode', '@nuxtjs/kinde'],
 	colorMode: {
 		classSuffix: ''
 	},
@@ -39,7 +39,8 @@ export default defineNuxtConfig({
 	},
 	runtimeConfig: {
 		public: {
-			nodeEnv: env.NODE_ENV
+			nodeEnv: env.NODE_ENV,
+			bypassAuth: process.env.NUXT_PUBLIC_BYPASS_AUTH === 'true'
 		}
 	}
 })

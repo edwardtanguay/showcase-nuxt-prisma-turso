@@ -1,6 +1,7 @@
 import { prisma } from '../utils/prisma'
 
 export default defineEventHandler(async (event) => {
+  await requireAuth(event)
   try {
     const body = await readBody(event)
     if (!body || !body.title || typeof body.title !== 'string') {
