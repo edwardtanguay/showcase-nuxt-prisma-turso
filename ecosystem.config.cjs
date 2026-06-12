@@ -28,6 +28,7 @@ module.exports = {
       name: 'showcase-nuxt-prisma-turso',
       port: '3148',
       instances: 1,
+      interpreter: '/home/edward/.nvm/versions/node/v20.20.2/bin/node', 
       script: './.output/server/index.mjs',
       env: {
         NODE_ENV: 'production',
