@@ -1,6 +1,5 @@
 import { PrismaClient } from '../prisma/client/client'
-import { PrismaPg } from '@prisma/adapter-pg'
-import { Pool } from 'pg'
+import { PrismaLibSql } from '@prisma/adapter-libsql'
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient }
 
@@ -9,8 +8,10 @@ let prisma: PrismaClient
 if (globalForPrisma.prisma) {
   prisma = globalForPrisma.prisma
 } else {
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL })
-  const adapter = new PrismaPg(pool)
+  const adapter = new PrismaLibSql({
+    url: process.env.DATABASE_URL!,
+    authToken: process.env.DATABASE_AUTH_TOKEN,
+  })
   prisma = new PrismaClient({ adapter })
   if (process.env.NODE_ENV !== 'production') {
     globalForPrisma.prisma = prisma

@@ -1,3 +1,3 @@
-# LangLearn
+# showcase-nuxt-prisma-turso
 
-This is my site to enable me to achieve my goal of becoming B1+ fluent in 10 languages.
+This site tests out a Turso database, see [Turso](https://turso.tech)
