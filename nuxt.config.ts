@@ -7,6 +7,7 @@ export default defineNuxtConfig({
 
 	modules: ['@nuxt/ui', '@nuxtjs/color-mode', '@nuxtjs/kinde'],
 	colorMode: {
+		preference: 'dark',
 		classSuffix: ''
 	},
 	devServer: {
@@ -14,7 +15,7 @@ export default defineNuxtConfig({
 	},
 	app: {
 		head: {
-			title: 'Nuxt/Prisma/Turso Showcase',
+			title: 'Turso Showcase',
 			meta: [
 				{ name: 'description', content: 'A Nuxt 3, Prisma, and Turso database showcase application' }
 			],
